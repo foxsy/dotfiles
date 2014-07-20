@@ -1,0 +1,1 @@
+alias puppet-sync='bash /Users/zane/src/georiot/puppet/.git/hooks/post-update' 
