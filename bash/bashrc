@@ -8,6 +8,12 @@ export EDITOR=vi
 #	Pull in some standard dotfiles
 source ${HOME}/.dotfiles/bash/git-prompt.sh
 ##################################################################
+##################################################################
+#Golang stuff
+export GOROOT=${HOME}/go
+export PATH=${GOROOT}/bin:${PATH}
+export GOPATH=${HOME}/Code/go
+##################################################################
 #aliases I want everywhere
 alias ctc="cd && clear"
 alias eigo="export LANG=C;export LC_ALL=C"
@@ -48,6 +54,8 @@ fi
 
 PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
 PATH=$PATH:$HOME/bin # Add RVM to PATH for scripting
+PATH=$PATH:/usr/local/go/bin
+PATH=$PATH:$GOPATH/bin
 
 source ${HOME}/.dotfiles/bash/git-completion.bash
 
