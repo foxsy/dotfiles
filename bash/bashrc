@@ -10,7 +10,7 @@ source ${HOME}/.dotfiles/bash/git-prompt.sh
 ##################################################################
 ##################################################################
 #Golang stuff
-export GOROOT=${HOME}/go
+export GOROOT=/usr/local/go
 export PATH=${GOROOT}/bin:${PATH}
 export GOPATH=${HOME}/Code/go
 ##################################################################
@@ -21,6 +21,7 @@ alias src="echo \"Updating Settings\" && . ~/.bash_profile"
 alias vundleup="vim +BundleInstall +qall"
 alias diary="cd ${HOME}/Documents/VimWiki && git pull origin master && vim +VimwikiMakeDiaryNote && git commit -a -m\"diary entry\" && git push origin master "
 alias wiki="cd ${HOME}/Documents/VimWiki && git pull origin master && vim +VimwikiIndex && git commit -a -m\"wiki entry\" && git push origin master "
+HISTSIZE=20000
 ##################################################################
 # fix some GPG stuff
 GPG_TTY=`tty` 
@@ -56,6 +57,7 @@ PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
 PATH=$PATH:$HOME/bin # Add RVM to PATH for scripting
 PATH=$PATH:/usr/local/go/bin
 PATH=$PATH:$GOPATH/bin
+PATH=$PATH:/usr/local/packer
 
 source ${HOME}/.dotfiles/bash/git-completion.bash
 
@@ -182,3 +184,6 @@ export PS1=$IBlack$BICyan\[$BIRed$User$BICyan@$BIBlue$Host$BICyan\]:$Color_Off'$
 	  echo " '$Yellow$PathShort$Color_Off'\n\$ "; \
 	  fi)'
 fi
+
+# added by travis gem
+[ -f /Users/zane/.travis/travis.sh ] && source /Users/zane/.travis/travis.sh
