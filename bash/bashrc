@@ -7,6 +7,12 @@ export EDITOR=vi
 ##################################################################
 #	Pull in some standard dotfiles
 source ${HOME}/.dotfiles/bash/git-prompt.sh
+
+##################################################################
+#Golang stuff
+export GOROOT=/usr/lib/go-1.6
+export PATH=${GOROOT}/bin:${HOME}/Code/go/bin:${PATH}
+export GOPATH=${HOME}/Code/go
 ##################################################################
 ##################################################################
 #Golang stuff
@@ -15,12 +21,22 @@ export PATH=${GOROOT}/bin:${PATH}
 export GOPATH=${HOME}/Code/go
 ##################################################################
 #aliases I want everywhere
-alias ctc="cd && clear"
+alias ctc='cd ${PWD} && clear'
 alias eigo="export LANG=C;export LC_ALL=C"
 alias src="echo \"Updating Settings\" && . ~/.bash_profile"
-alias vundleup="vim +BundleInstall +qall"
+alias vundleup="/usr/bin/vim +BundleInstall +qall"
 alias diary="cd ${HOME}/Documents/VimWiki && git pull origin master && vim +VimwikiMakeDiaryNote && git commit -a -m\"diary entry\" && git push origin master "
 alias wiki="cd ${HOME}/Documents/VimWiki && git pull origin master && vim +VimwikiIndex && git commit -a -m\"wiki entry\" && git push origin master "
+alias vw="cd ${HOME}/Documents/VimWiki && vim +VimwikiIndex "
+
+if [ -x /usr/bin/nvim ] ; then
+	alias vim="/usr/bin/nvim"
+fi
+##################################################################
+#	Add some autocomplete fun
+if gem list |grep -q teamocil ; then
+	complete -W "$(teamocil --list)" teamocil
+fi
 ##################################################################
 # fix some GPG stuff
 GPG_TTY=`tty` 
@@ -35,9 +51,20 @@ fi
 ##################################################################
 #rvm
 if [[ -s $HOME/.rvm/scripts/rvm ]] ; then
-        source $HOME/.rvm/scripts/rvm
+	PATH=$HOME/bin:${PATH}		# Add my bin path
+	PATH=$HOME/.rvm/bin:${PATH} 	# Add RVM to PATH for scripting
 fi
+
+# tfenv 
+if [[ -f ${HOME}/bin/tfenv/bin/tfenv ]] ; then
+	PATH=${HOME}/bin/tfenv/bin:${PATH} 	
+fi
+
+
 ##################################################################
+# Get stuff based on wireless network connection
+
+# or hostname
 HOSTNAME=`hostname`
 # source in any host specific stuff
 if [ -f ${HOME}/.dotfiles/bash/aliases/${HOSTNAME} ]; then
@@ -47,6 +74,27 @@ fi
 if [ -f ${HOME}/.dotfiles/bash/aliases/${HOSTNAME}.secret ]; then
 	.  ${HOME}/.dotfiles/bash/aliases/${HOSTNAME}.secret
 fi
+# source in any host specific stuff that I don't want on github
+if [ -x /usr/bin/nmcli ]; then
+	if /usr/bin/nmcli devices 2>/dev/null |grep -q wlan0  ; then 
+		WIFI=`nmcli device show wlan0|grep GENERAL.CONNECTION |awk '{print $NF}'`
+	fi
+fi
+if [ "X${WIFI}" != "X" ] ; then
+	if [ -f ${HOME}/.dotfiles/bash/aliases/${WIFI}.secret ]; then
+		.  ${HOME}/.dotfiles/bash/aliases/${WIFI}.secret
+	fi
+fi
+
+if [ -f /tmp/.${USER}.iru ] ; then
+	IRU=`cat /tmp/.${USER}.iru`
+fi
+if [ "X${IRU}" != "X" ] ; then
+	if [ -f ${HOME}/.dotfiles/bash/aliases/${IRU}.secret ]; then
+		.  ${HOME}/.dotfiles/bash/aliases/${IRU}.secret
+	fi
+fi
+
 ##################################################################
 if ! [ -d ${HOME}/tmp/${USERNAME}-vim ] ; then
 	mkdir -p ${HOME}/tmp/vim
@@ -57,7 +105,29 @@ PATH=$PATH:$HOME/bin # Add RVM to PATH for scripting
 PATH=$PATH:/usr/local/go/bin
 PATH=$PATH:$GOPATH/bin
 
+# Git stuff
 source ${HOME}/.dotfiles/bash/git-completion.bash
+alias gitclean='git branch --merged master | grep -v "\* master" | xargs -n 1 git branch -d '
+
+##################################################################
+# Set the TMUX window title to the host being SSH'd to!!
+ssh() {
+    if [ "$(ps -p $(ps -p $$ -o ppid=) -o comm=)" = "tmux" ]; then
+	    short_name=`echo $* |awk -F'.' '{print $1}'`
+	    tmux rename-window "${short_name}"
+            command ssh "$@"
+            tmux set-window-option automatic-rename "on" 1>/dev/null
+    else
+            command ssh "$@"
+    fi
+}
+
+# Set the tmux title eg add to .rvmrc settitle REPO
+st() {
+	if  [ "${TMUX_PANE}X" != "X" ] ; then
+		printf "\033k$1\033\\"
+	fi
+}
 
 #  Customize BASH PS1 prompt to show current GIT repository and branch.
 #  by Mike Stewart - http://MediaDoneRight.com
@@ -149,36 +219,41 @@ Host="\h"
 NewLine="\n"
 Jobs="\j"
 
+HostPrompt="$BIWhite$On_Blue$User@$Host$Color_Off"
+CleanGitOpen="$Blue$On_Green$Color_Off$BIWhite$On_Green"
+DirtyGitOpen="$Blue$On_Red$Color_Off$BIWhite$On_Red"
+
 if [ -f ${HOME}/.rvm/bin/rvm-prompt ]; then
 
-export PS1=$IBlack$BICyan\[$BIRed$User$BICyan@$BIBlue$Host$BICyan\]:$Color_Off'$(git branch &>/dev/null;\
+export PS1=$HostPrompt'$(git branch &>/dev/null;\
 	if [ $? -eq 0 ]; then \
 		  echo "$(echo `git status` | grep "nothing to commit" > /dev/null 2>&1; \
 		    if [ "$?" -eq "0" ]; then \
 			        # @4 - Clean repository - nothing to commit
-    echo "'$Green'"$(__git_ps1 " (%s)"); \
+    echo "'$CleanGitOpen'"$(__git_ps1 " (%s)"); \
 	      else \
 		          # @5 - Changes to working tree
-        echo "'$IRed'"$(__git_ps1 " {%s}"); \
-		  fi) '$BYellow$PathShort$Color_Off$BICyan' $(~/.rvm/bin/rvm-prompt v p g) '$Color_Off'\n$ "; \
+        echo "'$DirtyGitOpen'"$(__git_ps1 " {%s}"); \
+	fi) '$Color_Off$BYellow$PathShort$Color_Off$BICyan' $(~/.rvm/bin/rvm-prompt v p g)$(ls -A *.tf &>/dev/null ; if [ $? -eq 0 ]; then tf=`terraform --version |grep "^Terraform"|cut -d " " -f 2`;echo "@TF-${tf}"; fi) '$Color_Off'\n$ "; \
 	  else \
 		    # @2 - Prompt when not in GIT repo
-	  echo " '$Yellow$PathShort$Color_Off'\n$ "; \
+	echo " '$Color_Off$Yellow$PathShort$Color_Off'\n$ "; \
 	  fi)'
 else
 
-export PS1=$IBlack$BICyan\[$BIRed$User$BICyan@$BIBlue$Host$BICyan\]:$Color_Off'$(git branch &>/dev/null;\
+export PS1=$HostPrompt'$(git branch &>/dev/null;\
 	if [ $? -eq 0 ]; then \
 		  echo "$(echo `git status` | grep "nothing to commit" > /dev/null 2>&1; \
 		    if [ "$?" -eq "0" ]; then \
 			        # @4 - Clean repository - nothing to commit
-    echo "'$Green'"$(__git_ps1 " (%s)"); \
+    echo "'$CleanGitOpen'"$(__git_ps1 " (%s)"); \
 	      else \
 		          # @5 - Changes to working tree
-        echo "'$IRed'"$(__git_ps1 " {%s}"); \
-		  fi) '$BYellow$PathShort$Color_Off'\n\$ "; \
+        echo "'$DirtyGitOpen'"$(__git_ps1 " {%s}"); \
+		  fi) '$Color_Off$BYellow$PathShort$Color_Off'\n\$ "; 
 	  else \
 		    # @2 - Prompt when not in GIT repo
-	  echo " '$Yellow$PathShort$Color_Off'\n\$ "; \
+	echo " '$Color_Off$Yellow$PathShort' $(ls -A *.tf &>/dev/null ; if [ $? -eq 0 ]; then tf=`terraform --version |grep "^Terraform"|cut -d " " -f 2`;echo "@TF-${tf}"; fi) '$Color_Off'\n\$ "; \
 	  fi)'
 fi
+

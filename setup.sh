@@ -17,6 +17,7 @@ fi
 ln -s ${HOME}/.dotfiles/vim/vimrc ${HOME}/.vimrc
 ln -s ${HOME}/.dotfiles/vim/gvimrc ${HOME}/.gvimrc
 ln -s ${HOME}/.dotfiles/vim ${HOME}/.vim
+ln -s ${HOME}/.dotfiles/vim ${HOME}/.neovimrc
 
 #setup bash
 ln -s ${HOME}/.dotfiles/bash/bashrc ${HOME}/.bashrc
@@ -27,6 +28,10 @@ ln -s ${HOME}/.dotfiles/mutt/mutt ${HOME}/.muttrc
 
 #setup tmux
 ln -s ${HOME}/.dotfiles/tmux/conf ${HOME}/.tmux.conf
+ln -s ${HOME}/.dotfiles/tmux/teamocil ${HOME}/.teamocil
+
+#setup ctags
+ln -s ${HOME}/.dotfiles/vim/ctags ${HOME}/.ctags
 
 if [ ! -d ${HOME}/.vim/bundle/vundle ]; then
 	echo "Installing vundle"

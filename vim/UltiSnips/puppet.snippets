@@ -1,0 +1,136 @@
+snippet class
+class ${1} {
+  ${2}
+}
+$0
+endsnippet
+
+snippet file
+file { '${1}':
+  ensure => present,
+  owner  => ${2:root},
+  group  => ${3:root},
+  mode   => '${4:0644}',
+  source => 'puppet:///modules/`!p
+try:
+  lines = open(fn, 'r')
+  for line in lines :
+    matchObj = re.match("class\s+(\w+)", line)
+    if matchObj:
+      snip.rv = matchObj.group(1)
+      break
+except:
+  pass`',
+}
+$0
+endsnippet
+
+snippet template
+file { '${1}':
+  ensure  => present,
+  owner   => ${2:root},
+  group   => ${3:root},
+  mode    => '${4:0644}',
+  content => template('`!p
+try:
+  lines = open(fn, 'r')
+  for line in lines :
+    matchObj = re.match("class\s+(\w+)", line)
+    if matchObj:
+      snip.rv = matchObj.group(1)
+      break
+except:
+  pass`/ '),
+}
+$0
+endsnippet
+
+
+snippet dir
+file { '${1}':
+  ensure => directory,
+  owner  => ${2:root},
+  group  => ${3:root},
+  mode   => '${4:0755}',
+}
+$0
+endsnippet
+
+
+snippet package
+package { '${1}':
+  ensure => installed,
+}
+$0
+endsnippet
+
+snippet gem
+package { '${1}':
+  provider => gem,
+  ensure   => installed,
+}
+$0
+endsnippet
+
+snippet exec
+exec { '${1}':
+  refreshonly => true,
+  command     => '${2}',
+}
+$0
+endsnippet
+
+snippet download
+exec { '${1}':
+  refreshonly => false,
+  command     => '/usr/bin/wget ${2}',
+  cwd         => '/usr/src',
+  creates     => '/usr/src/${3}'
+}
+$0
+endsnippet
+
+snippet debpkg
+package { '$1':
+  ensure   => installed,
+  provider => dpkg,
+  require  => File['/usr/src/$2'],
+  source   => '/usr/src/$2',
+}
+$0
+endsnippet
+
+snippet service
+service { '$1' :
+  ensure  => running,
+  enable  => true,
+  require => Class['`!p
+try:
+  lines = open(fn, 'r')
+  for line in lines :
+    matchObj = re.match("class\s+(\w+)", line)
+    if matchObj:
+      snip.rv = matchObj.group(1)
+      break
+except:
+  pass`::packages'],
+}
+$0
+endsnippet
+
+snippet link
+file { '$1' :
+  ensure => link,
+  target => '$1',
+}
+$0
+endsnippet
+
+snippet cron
+cron { '$1' :
+  command => '$1',
+  hour    => '*',
+  minute  => '*/15',
+}
+$0
+endsnippet

@@ -8,8 +8,35 @@ source ~/.dotfiles/vim/bundles.vim
 :set t_Co=256
 :set showcmd
 :let mapleader=","
+:set visualbell
+if !has('nvim')
+:set pastetoggle=<leader>p
+else
+noremap <leader>p <NOP>
+let g:airline#extensions#tabline#enabled = 1
+noremap <leader>t gt
+endif
+
+" For NEOVIM
+:set mouse=h
+
+" bottom bar
+":let g:airline_powerline_fonts=1
+:set laststatus=2
 
 :set nofoldenable
+
+let g:tagbar_type_puppet = {
+  \ 'ctagstype': 'puppet',
+  \ 'kinds': [
+    \'c:class',
+    \'s:site',
+    \'n:node',  
+    \'d:definition',
+    \'r:resource',
+    \'f:default'
+  \]
+\}
 
 if $TERM == 'screen'
   set term=xterm
@@ -22,9 +49,13 @@ set directory=~/tmp/vim//
 vmap <D-c> y:call system("pbcopy", getreg("\""))<CR>
 nmap <D-v> :call setreg("\"",system("pbpaste"))<CR>p
 
-nmap <silent> <c-n> :NERDTreeToggle<CR> 
+nmap <silent> <c-n> :NERDTreeToggle<CR>
 nmap <silent> <c-o> :FufFile **/<CR>
 nmap <silent> <c-y> :tabnew<CR>
+nnoremap <leader>. :CtrlPTag<cr>
+nmap <silent> <Leader>b :TagbarToggle<CR>
+
+nnoremap <leader>G :Grepper -tool git  -grepprg git -C `git rev-parse --show-toplevel` grep -nI<cr>
 
 " Turn on spell check for mail "
 :autocmd FileType mail setlocal spell spelllang=en_us
@@ -41,6 +72,12 @@ if &term == "screen" || &term == "xterm"
   set title
 endif
 
+" settings for ultisnips"
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<c-b>"
+let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+let g:UltiSnipsEditSplit="vertical"
+map <leader>u :UltiSnipsEdit<CR>
 
 " puppet manifests "
 au BufRead,BufNewFile *.pp   setfiletype puppet
@@ -53,6 +90,7 @@ au BufRead,BufNewFile *.pp   setfiletype puppet
 :autocmd FileType puppet map <leader>k :w<CR>:Tabularize /=><CR>
 :autocmd FileType puppet map <leader>l :w<CR>:!puppet-lint %<CR>
 
+
 " ruby syntax "
 au BufRead,BufNewFile *.rb   setfiletype ruby
 :autocmd FileType ruby set shiftwidth=2
@@ -62,9 +100,53 @@ au BufRead,BufNewFile *.rb   setfiletype ruby
 :autocmd FileType ruby set expandtab
 :autocmd FileType ruby map <leader>l :w<CR>:!ruby -c %<CR>
 
+" yaml syntax "
+au BufRead,BufNewFile *.yaml   setfiletype yaml
+:autocmd FileType yaml set shiftwidth=2
+:autocmd FileType yaml set softtabstop=2
+:autocmd FileType yaml set autoindent
+:autocmd FileType yaml set smartindent
+:autocmd FileType yaml set expandtab
+
+" logstash syntax "
+:autocmd FileType logstash set shiftwidth=2
+:autocmd FileType logstash set softtabstop=2
+:autocmd FileType logstash set autoindent
+:autocmd FileType logstash set smartindent
+:autocmd FileType logstash set expandtab
+:autocmd FileType logstash map <leader>k :w<CR>:Tabularize /=><CR>
+
+
+" saltstack syntax "
+au BufRead,BufNewFile *.sls   setfiletype sls
+:autocmd FileType sls set shiftwidth=2
+:autocmd FileType sls set softtabstop=2
+:autocmd FileType sls set autoindent
+:autocmd FileType sls set smartindent
+:autocmd FileType sls set expandtab
+
+" terraform syntax "
+au BufRead,BufNewFile *.tf setlocal filetype=terraform
+:autocmd FileType terraform set shiftwidth=2
+:autocmd FileType terraform set softtabstop=2
+:autocmd FileType terraform set autoindent
+:autocmd FileType terraform set smartindent
+:autocmd FileType terraform set expandtab
+:autocmd FileType terraform map <leader>k :w<CR>:Tabularize /=<CR>
+
+
 " golang syntax "
 au BufRead,BufNewFile *.go set filetype=go
-:autocmd FileType go map <leader>l :w<CR>:!go build %<CR>
+au FileType go nmap <leader>r <Plug>(go-run)
+au FileType go nmap <leader>b <Plug>(go-build)
+au FileType go nmap <leader>t <Plug>(go-test)
+au FileType go nmap <leader>c <Plug>(go-coverage)
+au FileType go nmap <Leader>ds <Plug>(go-def-split)
+au FileType go nmap <Leader>dv <Plug>(go-def-vertical)
+au FileType go nmap <Leader>dt <Plug>(go-def-tab)
+au FileType go nmap <Leader>gd <Plug>(go-doc)
+au FileType go nmap <Leader>gv <Plug>(go-doc-vertical)
+au FileType go nmap <Leader>s <Plug>(go-implements)
 
 " python syntax "
 au BufRead,BufNewFile *.py   setfiletype python
@@ -87,6 +169,13 @@ au Bufread,BufNewFile *.cfg setfiletype icinga
 :autocmd FileType icinga set autoindent
 :autocmd FileType icinga set smartindent
 
+" json files "
+au Bufread,BufNewFile *.json setfiletype json
+:autocmd FileType json set shiftwidth=2
+:autocmd FileType json set softtabstop=2
+:autocmd FileType json set autoindent
+:autocmd FileType json set smartindent
+
 " erlang files "
 au BufRead,BufNewFile *.erl set filetype=erlang
 
@@ -100,8 +189,19 @@ let g:vimwiki_list = [
 			\{'path': '~/Documents/VimWiki/customer.wiki/geo.wiki'},
 			\{'path': '~/Documents/VimWiki/customer.wiki/mz.wiki'} 
 		\]
+let iru=$IRU
+
+if iru == "trulia"
+	let g:vimwiki_list = [ {'path': '~/Documents/VimWiki/trulia.wiki'} ]
+endif
+
+if iru == ""
+	let g:vimwiki_list = [ {'path': '~/Documents/VimWiki/tech.wiki'} ]
+endif
+
 au BufRead,BufNewFile *.wiki set filetype=vimwiki
 :autocmd FileType vimwiki map <leader>d :VimwikiMakeDiaryNote<CR>
+
 function! ToggleCalendar()
   execute ":Calendar"
   if exists("g:calendar_open")
@@ -116,3 +216,11 @@ function! ToggleCalendar()
   end
 endfunction
 :autocmd FileType vimwiki map <leader>c :call ToggleCalendar()<CR>
+:autocmd FileType vimwiki map <leader>s :VimwikiSearch /
+:autocmd FileType vimwiki map <leader>dg :VimwikiDiaryGenerateLinks<CR>
+:autocmd FileType vimwiki map <leader>di :VimwikiDiaryIndex<CR>
+
+" Turn off file caching for fuzzy file finder "
+let g:fuf_help_cache_dir = ''
+let g:fuf_tag_cache_dir = ''
+let g:fuf_taggedfile_cache_dir = ''
