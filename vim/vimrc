@@ -1,6 +1,11 @@
 " Vundle and bundles configuration
 source ~/.dotfiles/vim/bundles.vim
 
+" Powerline
+"set rtp+=/usr/lib/python3/dist-packages/powerline/bindings/vim
+set laststatus=2
+
+
 :syntax enable
 :set background=dark
 :set ruler
@@ -13,18 +18,22 @@ if !has('nvim')
 :set pastetoggle=<leader>p
 else
 noremap <leader>p <NOP>
-let g:airline#extensions#tabline#enabled = 1
+
 noremap <leader>t gt
 endif
+
+" Powerline stuffs
+" let g:Powerline_symbols = 'fancy'
 
 " For NEOVIM
 :set mouse=h
 
-" bottom bar
-":let g:airline_powerline_fonts=1
-:set laststatus=2
-
 :set nofoldenable
+
+" handle the case where I keep typing :W on this crappy Mac keyboard
+:command WQ wq
+:command Wq wq
+:command W w
 
 let g:tagbar_type_puppet = {
   \ 'ctagstype': 'puppet',
@@ -45,15 +54,18 @@ endif
 set backupdir=~/tmp/vim//
 set directory=~/tmp/vim//
 
-" On OSX
-vmap <D-c> y:call system("pbcopy", getreg("\""))<CR>
-nmap <D-v> :call setreg("\"",system("pbpaste"))<CR>p
 
 nmap <silent> <c-n> :NERDTreeToggle<CR>
 nmap <silent> <c-o> :FufFile **/<CR>
 nmap <silent> <c-y> :tabnew<CR>
 nnoremap <leader>. :CtrlPTag<cr>
-nmap <silent> <Leader>b :TagbarToggle<CR>
+
+"Tagbar
+nmap <silent> <Leader>t :TagbarToggle<CR>
+nmap <silent> <Leader>f :FufRenewCache<CR>
+
+" Save workspace
+nnoremap <leader>x :ToggleWorkspace<CR>
 
 nnoremap <leader>G :Grepper -tool git  -grepprg git -C `git rev-parse --show-toplevel` grep -nI<cr>
 
@@ -90,6 +102,12 @@ au BufRead,BufNewFile *.pp   setfiletype puppet
 :autocmd FileType puppet map <leader>k :w<CR>:Tabularize /=><CR>
 :autocmd FileType puppet map <leader>l :w<CR>:!puppet-lint %<CR>
 
+" lua syntax "
+:autocmd FileType lua set shiftwidth=2
+:autocmd FileType lua set softtabstop=2
+:autocmd FileType lua set autoindent
+:autocmd FileType lua set smartindent
+:autocmd FileType lua set expandtab
 
 " ruby syntax "
 au BufRead,BufNewFile *.rb   setfiletype ruby
@@ -99,6 +117,9 @@ au BufRead,BufNewFile *.rb   setfiletype ruby
 :autocmd FileType ruby set smartindent
 :autocmd FileType ruby set expandtab
 :autocmd FileType ruby map <leader>l :w<CR>:!ruby -c %<CR>
+
+" ansible syntax"
+:autocmd FileType ansible map <leader>l :w<CR>:!ansible-lint -x ANSIBLE0008 %<CR>
 
 " yaml syntax "
 au BufRead,BufNewFile *.yaml   setfiletype yaml
@@ -116,15 +137,6 @@ au BufRead,BufNewFile *.yaml   setfiletype yaml
 :autocmd FileType logstash set expandtab
 :autocmd FileType logstash map <leader>k :w<CR>:Tabularize /=><CR>
 
-
-" saltstack syntax "
-au BufRead,BufNewFile *.sls   setfiletype sls
-:autocmd FileType sls set shiftwidth=2
-:autocmd FileType sls set softtabstop=2
-:autocmd FileType sls set autoindent
-:autocmd FileType sls set smartindent
-:autocmd FileType sls set expandtab
-
 " terraform syntax "
 au BufRead,BufNewFile *.tf setlocal filetype=terraform
 :autocmd FileType terraform set shiftwidth=2
@@ -133,6 +145,9 @@ au BufRead,BufNewFile *.tf setlocal filetype=terraform
 :autocmd FileType terraform set smartindent
 :autocmd FileType terraform set expandtab
 :autocmd FileType terraform map <leader>k :w<CR>:Tabularize /=<CR>
+au BufWritePost *.tf !terraform fmt %
+au BufWritePost *.tfvars !terraform fmt %
+
 
 
 " golang syntax "
@@ -179,7 +194,7 @@ au Bufread,BufNewFile *.json setfiletype json
 " erlang files "
 au BufRead,BufNewFile *.erl set filetype=erlang
 
-" puppet manifests "
+" Markdown Files "
 au BufRead,BufNewFile *.md   setfiletype markdown
 
 " vimwiki stuff "
