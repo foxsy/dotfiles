@@ -2,7 +2,7 @@
 #	My standard bashrc
 ##########################################################
 #set a civilized mode :)
-set -o vi
+set -o emacs
 export EDITOR=vi
 ##################################################################
 #	Pull in some standard dotfiles
