@@ -3,7 +3,7 @@ Installing
 
 ```
 cd
-git clone https://github.com/maguec/dotfiles.git .dotfiles
+git clone https://github.com/foxsy/dotfiles.git .dotfiles
 cd .dotfiles
 ./setup.sh
 cd
