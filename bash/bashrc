@@ -220,6 +220,10 @@ On_IPurple="\[\033[10;95m\]"  # Purple
 On_ICyan="\[\033[0;106m\]"    # Cyan
 On_IWhite="\[\033[0;107m\]"   # White
 
+# Adding ls colors that I prefer
+export CLICOLOR=1
+export LSCOLORS=ExFxCxDxBxegedabagaced
+
 # Various variables you might want for your PS1 prompt instead
 Time12h="\T"
 Time12a="\@"
